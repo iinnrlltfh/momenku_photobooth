@@ -1,11 +1,27 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useFrame } from "@/contexts/FrameContext"
 
 export default function MomenkuPhotobooth() {
   const [selectedFilter, setSelectedFilter] = useState<number | null>(null)
   const [duration, setDuration] = useState("3s")
+  const { selectedFrameId } = useFrame()
+  const router = useRouter()
+
+  // Redirect to frames page if no frame is selected
+  useEffect(() => {
+    if (selectedFrameId === null) {
+      router.push("/frames")
+    }
+  }, [selectedFrameId, router])
+
+  // Don't render if no frame is selected
+  if (selectedFrameId === null) {
+    return null
+  }
 
   const filters = [
     { id: 1, color: "bg-orange-700", border: "border-orange-900" },

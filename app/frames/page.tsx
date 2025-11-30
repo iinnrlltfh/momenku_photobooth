@@ -3,6 +3,8 @@
 import Link from "next/link"
 import { useState } from "react"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useFrame } from "@/contexts/FrameContext"
 
 const frames = [
   {
@@ -269,7 +271,14 @@ const frameImages = [
 ]
 
 export default function FramesPage() {
-  const [selectedFrameId, setSelectedFrameId] = useState<number | null>(null)
+  const { selectedFrameId, setSelectedFrameId } = useFrame()
+  const router = useRouter()
+
+  const handleFrameSelect = (frameId: number) => {
+    setSelectedFrameId(frameId)
+    // Redirect to photobooth immediately after selection
+    router.push("/photobooth")
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -317,7 +326,7 @@ export default function FramesPage() {
             {frameImages.map((frame) => (
               <button
                 key={frame.id}
-                onClick={() => setSelectedFrameId(frame.id)}
+                onClick={() => handleFrameSelect(frame.id)}
                 className={`group relative transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl focus:outline-none rounded-lg overflow-hidden mt-6 ${
                   selectedFrameId === frame.id
                     ? "ring-4 ring-slate-700 shadow-2xl -translate-y-2"
