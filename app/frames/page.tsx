@@ -343,21 +343,6 @@ export default function FramesPage() {
               </button>
             ))}
           </div>
-
-          {/* Selection Info & CTA */}
-          {selectedFrameId !== null && (
-            <div className="mt-12 text-center">
-              <div className="bg-white/90 rounded-lg p-6 inline-block">
-                <p className="text-slate-600 mb-4">Frame selected</p>
-                <Link
-                  href="/photobooth"
-                  className="inline-block bg-gradient-to-r from-pink-500 to-blue-500 text-white font-semibold px-8 py-3 rounded-full hover:shadow-lg transition-all duration-300"
-                >
-                  Continue to Photobooth →
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

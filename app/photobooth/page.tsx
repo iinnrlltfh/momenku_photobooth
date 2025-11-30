@@ -8,8 +8,46 @@ import { useFrame } from "@/contexts/FrameContext"
 export default function MomenkuPhotobooth() {
   const [selectedFilter, setSelectedFilter] = useState<number | null>(null)
   const [duration, setDuration] = useState("3s")
+  const [capturedPhotos, setCapturedPhotos] = useState<string[]>([])
+  const [stream, setStream] = useState<MediaStream | null>(null)
+  const [cameraError, setCameraError] = useState<string | null>(null)
+  const videoRef = React.useRef<HTMLVideoElement>(null)
+  const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const { selectedFrameId } = useFrame()
   const router = useRouter()
+
+  // Define which frames can take 3 photos (rest can take 4)
+  const threePhotoFrames = [2, 5, 6, 9, 7]
+  const maxPhotos = selectedFrameId && threePhotoFrames.includes(selectedFrameId) ? 3 : 4
+
+  // Request camera access
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 1280, height: 720, facingMode: "user" },
+          audio: false,
+        })
+        setStream(mediaStream)
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream
+        }
+        setCameraError(null)
+      } catch (error) {
+        console.error("Error accessing camera:", error)
+        setCameraError("Unable to access camera. Please grant camera permissions.")
+      }
+    }
+
+    startCamera()
+
+    // Cleanup function to stop camera when component unmounts
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop())
+      }
+    }
+  }, [])
 
   // Redirect to frames page if no frame is selected
   useEffect(() => {
@@ -17,6 +55,22 @@ export default function MomenkuPhotobooth() {
       router.push("/frames")
     }
   }, [selectedFrameId, router])
+
+  // Capture photo from video stream
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current && capturedPhotos.length < maxPhotos) {
+      const video = videoRef.current
+      const canvas = canvasRef.current
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+      const ctx = canvas.getContext("2d")
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+        const photoDataUrl = canvas.toDataURL("image/jpeg")
+        setCapturedPhotos([...capturedPhotos, photoDataUrl])
+      }
+    }
+  }
 
   // Don't render if no frame is selected
   if (selectedFrameId === null) {
@@ -60,89 +114,147 @@ export default function MomenkuPhotobooth() {
       {/* Main Content */}
       <div className="flex-1 bg-gradient-to-r from-pink-200 via-pink-100 to-blue-200 px-6 py-12">
         <div className="max-w-7xl mx-auto">
-          <div className="flex items-center gap-16">
-            {/* Left Side - Photo Preview Box */}
-            <div className="w-full max-w-2xl">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 aspect-[4/3] flex items-center justify-center">
-                <div className="text-center">
-                  <svg
-                    className="w-40 h-40 mx-auto text-gray-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+          <div className="flex flex-col gap-8">
+            <div className="flex items-center gap-16">
+              {/* Left Side - Photo Preview Box */}
+              <div className="w-full max-w-2xl">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 aspect-[4/3] flex items-center justify-center overflow-hidden">
+                  {cameraError ? (
+                    <div className="text-center">
+                      <svg
+                        className="w-20 h-20 mx-auto text-red-400 mb-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
+                      </svg>
+                      <p className="text-red-600 text-sm">{cameraError}</p>
+                    </div>
+                  ) : (
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  )}
+                  <canvas ref={canvasRef} className="hidden" />
+                </div>
+              </div>
+
+              {/* Right Side - Controls */}
+              <div className="space-y-8">
+                <h2 className="text-4xl font-semibold text-slate-700">Choose a filter for your photos!</h2>
+
+                {/* Filter Selection - Circular Buttons */}
+                <div className="flex gap-4">
+                  {filters.map((filter) => (
+                    <button
+                      key={filter.id}
+                      onClick={() => setSelectedFilter(filter.id)}
+                      className={`w-14 h-14 rounded-full ${filter.color} ${filter.border} border-2 transition-all duration-200 hover:scale-110 shadow-lg ${
+                        selectedFilter === filter.id ? "ring-4 ring-white scale-110" : ""
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-wrap gap-3 pt-2">
+                  <button className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm">
+                    Upload Image
+                  </button>
+                  <button
+                    onClick={() => router.push("/frames")}
+                    className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                    <line
-                      x1="4"
-                      y1="4"
-                      x2="20"
-                      y2="20"
+                    Change Frame
+                  </button>
+                  <button
+                    onClick={capturePhoto}
+                    disabled={capturedPhotos.length >= maxPhotos || !stream}
+                    className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Capture Photo
+                  </button>
+                  <div className="relative">
+                    <select
+                      value={duration}
+                      onChange={(e) => setDuration(e.target.value)}
+                      className="pl-5 pr-8 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all appearance-none cursor-pointer shadow-sm text-sm"
+                    >
+                      <option value="3s">3s</option>
+                      <option value="5s">5s</option>
+                      <option value="10s">10s</option>
+                    </select>
+                    <svg
+                      className="w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600"
+                      fill="none"
                       stroke="currentColor"
-                      strokeWidth={1.5}
-                      strokeLinecap="round"
-                    />
-                  </svg>
+                      viewBox="0 0 24 24"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Side - Controls */}
-            <div className="space-y-8">
-              <h2 className="text-4xl font-semibold text-slate-700">Choose a filter for your photos!</h2>
-
-              {/* Filter Selection - Circular Buttons */}
-              <div className="flex gap-4">
-                {filters.map((filter) => (
-                  <button
-                    key={filter.id}
-                    onClick={() => setSelectedFilter(filter.id)}
-                    className={`w-14 h-14 rounded-full ${filter.color} ${filter.border} border-2 transition-all duration-200 hover:scale-110 shadow-lg ${
-                      selectedFilter === filter.id ? "ring-4 ring-white scale-110" : ""
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3 pt-2">
-                <button className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm">
-                  Upload Image
-                </button>
-                <button className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm">
-                  Change Frame
-                </button>
-                <button className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm">
-                  Start
-                </button>
-                <div className="relative">
-                  <select
-                    value={duration}
-                    onChange={(e) => setDuration(e.target.value)}
-                    className="pl-5 pr-8 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all appearance-none cursor-pointer shadow-sm text-sm"
-                  >
-                    <option value="3s">3s</option>
-                    <option value="5s">5s</option>
-                    <option value="10s">10s</option>
-                  </select>
-                  <svg
-                    className="w-3 h-3 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-600"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+            {/* Captured Photos Grid */}
+            <div className="w-full">
+              <div className="bg-white/50 backdrop-blur-sm rounded-2xl p-6 shadow-lg">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-xl font-semibold text-slate-700">
+                    Captured Photos ({capturedPhotos.length}/{maxPhotos})
+                  </h3>
+                  {capturedPhotos.length > 0 && (
+                    <button
+                      onClick={() => setCapturedPhotos([])}
+                      className="px-4 py-2 bg-red-500/80 hover:bg-red-600 text-white rounded-full text-sm transition-all shadow-sm"
+                    >
+                      Clear All
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-4 gap-4">
+                  {Array.from({ length: maxPhotos }).map((_, index) => (
+                    <div
+                      key={index}
+                      className="aspect-[3/4] bg-white rounded-lg shadow-md border-2 border-slate-200 flex items-center justify-center overflow-hidden"
+                    >
+                      {capturedPhotos[index] ? (
+                        <img
+                          src={capturedPhotos[index]}
+                          alt={`Captured photo ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="text-center p-4">
+                          <svg
+                            className="w-12 h-12 mx-auto text-gray-300 mb-2"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                            />
+                          </svg>
+                          <span className="text-xs text-gray-400">Photo {index + 1}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
