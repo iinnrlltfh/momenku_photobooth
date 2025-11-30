@@ -61,7 +61,7 @@ export default function Home() {
                   isHovering ? "bg-white/20 border-slate-400 text-slate-700" : "bg-white border-slate-300 text-slate-600"
                 }`}
               >
-                Start ✨
+                Start
               </button>
             </Link>
           </div>

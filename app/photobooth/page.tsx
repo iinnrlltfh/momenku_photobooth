@@ -11,6 +11,8 @@ export default function MomenkuPhotobooth() {
   const [capturedPhotos, setCapturedPhotos] = useState<string[]>([])
   const [stream, setStream] = useState<MediaStream | null>(null)
   const [cameraError, setCameraError] = useState<string | null>(null)
+  const [isCapturing, setIsCapturing] = useState(false)
+  const [countdown, setCountdown] = useState<number | null>(null)
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const { selectedFrameId } = useFrame()
@@ -58,7 +60,7 @@ export default function MomenkuPhotobooth() {
 
   // Capture photo from video stream
   const capturePhoto = () => {
-    if (videoRef.current && canvasRef.current && capturedPhotos.length < maxPhotos) {
+    if (videoRef.current && canvasRef.current) {
       const video = videoRef.current
       const canvas = canvasRef.current
       canvas.width = video.videoWidth
@@ -67,9 +69,46 @@ export default function MomenkuPhotobooth() {
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
         const photoDataUrl = canvas.toDataURL("image/jpeg")
-        setCapturedPhotos([...capturedPhotos, photoDataUrl])
+        setCapturedPhotos((prev) => [...prev, photoDataUrl])
       }
     }
+  }
+
+  // Start automatic photo capture sequence
+  const startCaptureSequence = () => {
+    if (isCapturing || !stream) return
+
+    setIsCapturing(true)
+    setCapturedPhotos([]) // Clear previous photos
+    
+    const intervalSeconds = parseInt(duration)
+    let photosRemaining = maxPhotos
+    let currentCountdown = intervalSeconds
+
+    // Initial countdown
+    setCountdown(currentCountdown)
+
+    const countdownInterval = setInterval(() => {
+      currentCountdown--
+      if (currentCountdown === 0) {
+        // Take photo
+        capturePhoto()
+        photosRemaining--
+
+        if (photosRemaining === 0) {
+          // All photos taken
+          clearInterval(countdownInterval)
+          setCountdown(null)
+          setIsCapturing(false)
+        } else {
+          // Reset countdown for next photo
+          currentCountdown = intervalSeconds
+          setCountdown(currentCountdown)
+        }
+      } else {
+        setCountdown(currentCountdown)
+      }
+    }, 1000)
   }
 
   // Don't render if no frame is selected
@@ -118,7 +157,7 @@ export default function MomenkuPhotobooth() {
             <div className="flex items-center gap-16">
               {/* Left Side - Photo Preview Box */}
               <div className="w-full max-w-2xl">
-                <div className="bg-white rounded-2xl shadow-2xl p-8 aspect-[4/3] flex items-center justify-center overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-2xl p-8 aspect-[4/3] flex items-center justify-center overflow-hidden relative">
                   {cameraError ? (
                     <div className="text-center">
                       <svg
@@ -137,13 +176,23 @@ export default function MomenkuPhotobooth() {
                       <p className="text-red-600 text-sm">{cameraError}</p>
                     </div>
                   ) : (
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover rounded-lg"
-                    />
+                    <>
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                      {/* Countdown Overlay */}
+                      {countdown !== null && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
+                          <div className="text-white text-[200px] font-bold animate-pulse">
+                            {countdown}
+                          </div>
+                        </div>
+                      )}
+                    </>
                   )}
                   <canvas ref={canvasRef} className="hidden" />
                 </div>
@@ -178,20 +227,20 @@ export default function MomenkuPhotobooth() {
                     Change Frame
                   </button>
                   <button
-                    onClick={capturePhoto}
-                    disabled={capturedPhotos.length >= maxPhotos || !stream}
+                    onClick={startCaptureSequence}
+                    disabled={isCapturing || !stream}
                     className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    Capture Photo
+                    {isCapturing ? "Capturing..." : "Start"}
                   </button>
                   <div className="relative">
                     <select
                       value={duration}
                       onChange={(e) => setDuration(e.target.value)}
-                      className="pl-5 pr-8 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all appearance-none cursor-pointer shadow-sm text-sm"
+                      disabled={isCapturing}
+                      className="pl-5 pr-8 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all appearance-none cursor-pointer shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <option value="3s">3s</option>
-                      <option value="5s">5s</option>
                       <option value="10s">10s</option>
                     </select>
                     <svg
