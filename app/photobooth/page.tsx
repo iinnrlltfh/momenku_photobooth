@@ -13,6 +13,7 @@ export default function MomenkuPhotobooth() {
   const [cameraError, setCameraError] = useState<string | null>(null)
   const [isCapturing, setIsCapturing] = useState(false)
   const [countdown, setCountdown] = useState<number | null>(null)
+  const [showRetakeModal, setShowRetakeModal] = useState(false)
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const { selectedFrameId } = useFrame()
@@ -111,6 +112,21 @@ export default function MomenkuPhotobooth() {
     }, 1000)
   }
 
+  // Handle retake button click
+  const handleRetakeClick = () => {
+    if (capturedPhotos.length > 0) {
+      setShowRetakeModal(true)
+    } else {
+      startCaptureSequence()
+    }
+  }
+
+  // Confirm retake
+  const confirmRetake = () => {
+    setShowRetakeModal(false)
+    startCaptureSequence()
+  }
+
   // Don't render if no frame is selected
   if (selectedFrameId === null) {
     return null
@@ -157,8 +173,8 @@ export default function MomenkuPhotobooth() {
             {/* Left Side - Camera and Photo Section */}
             <div className="w-full max-w-2xl space-y-6">
               {/* Camera Preview Box */}
-              <p className="text-center">Make sure your face is within this line</p>
-              <div className="bg-white rounded-2xl shadow-2xl p-8 aspect-[4/3] flex items-center justify-center overflow-hidden relative">
+              <h1 className="text-center text-lg font-semibold">Make sure your face is within this line</h1>
+              <div className="bg-white rounded-2xl shadow-2xl p-6 aspect-[4/3] flex items-center justify-center overflow-hidden relative">
                 {cameraError ? (
                   <div className="text-center">
                     <svg
@@ -287,7 +303,7 @@ export default function MomenkuPhotobooth() {
               {/* Retake & Done Buttons */}
               <div className="flex flex-wrap gap-3 pt-2">
                 <button
-                  onClick={startCaptureSequence}
+                  onClick={handleRetakeClick}
                   disabled={isCapturing || !stream}
                   className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -308,6 +324,32 @@ export default function MomenkuPhotobooth() {
           </div>
         </div>
       </div>
+
+      {/* Retake Confirmation Modal */}
+      {showRetakeModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="p-14 max-w-xl w-full mx-4 shadow-2xl" style={{ backgroundColor: "#FDF2F8" }}>
+            <p className="text-center text-slate-700 text-lg mb-12 leading-relaxed">
+              Ingin ambil ulang foto? <br />
+              foto sebelumnya akan hilang
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                onClick={() => setShowRetakeModal(false)}
+                className="px-10 py-2 bg-purple-400 hover:bg-purple-600 text-white rounded-full text-sm font-medium transition-all shadow-md"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmRetake}
+                className="px-10 py-2 bg-purple-400 hover:bg-purple-600 text-white rounded-full text-sm font-medium transition-all shadow-md"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
