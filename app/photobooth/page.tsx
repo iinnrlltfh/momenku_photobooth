@@ -14,6 +14,7 @@ export default function MomenkuPhotobooth() {
   const [isCapturing, setIsCapturing] = useState(false)
   const [countdown, setCountdown] = useState<number | null>(null)
   const [showRetakeModal, setShowRetakeModal] = useState(false)
+  const [isMirrored, setIsMirrored] = useState(false)
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const { selectedFrameId } = useFrame()
@@ -68,10 +69,45 @@ export default function MomenkuPhotobooth() {
       canvas.height = video.videoHeight
       const ctx = canvas.getContext("2d")
       if (ctx) {
+        // Apply filter if selected
+        if (selectedFilter && selectedFilter !== 5) {
+          ctx.filter = getFilterStyle(selectedFilter)
+        }
+        
+        // Mirror if enabled
+        if (isMirrored) {
+          ctx.translate(canvas.width, 0)
+          ctx.scale(-1, 1)
+        }
+        
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
         const photoDataUrl = canvas.toDataURL("image/jpeg")
         setCapturedPhotos((prev) => [...prev, photoDataUrl])
       }
+    }
+  }
+
+  // Get CSS filter style based on filter ID
+  const getFilterStyle = (filterId: number) => {
+    switch (filterId) {
+      case 1:
+        return "sepia(50%) saturate(150%)" // Warm/Vintage
+      case 2:
+        return "grayscale(100%)" // Black & White
+      case 3:
+        return "contrast(120%) brightness(90%)" // High Contrast
+      case 4:
+        return "saturate(200%) hue-rotate(20deg)" // Vibrant
+      default:
+        return "none"
+    }
+  }
+
+  // Handle filter selection
+  const handleFilterSelect = (filterId: number) => {
+    setSelectedFilter(filterId)
+    if (filterId === 5) {
+      setIsMirrored(!isMirrored)
     }
   }
 
@@ -133,11 +169,11 @@ export default function MomenkuPhotobooth() {
   }
 
   const filters = [
-    { id: 1, color: "bg-orange-700", border: "border-orange-900" },
-    { id: 2, color: "bg-black", border: "border-gray-800" },
-    { id: 3, color: "bg-gray-500", border: "border-gray-600" },
-    { id: 4, color: "bg-blue-200", border: "border-blue-300" },
-    { id: 5, color: "bg-black", border: "border-gray-800" },
+    { id: 1, color: "bg-orange-700", border: "border-orange-900", name: "Warm" },
+    { id: 2, color: "bg-black", border: "border-gray-800", name: "B&W" },
+    { id: 3, color: "bg-gray-500", border: "border-gray-600", name: "Contrast" },
+    { id: 4, color: "bg-blue-200", border: "border-blue-300", name: "Vibrant" },
+    { id: 5, color: "bg-purple-400", border: "border-purple-500", name: "Mirror" },
   ]
 
   return (
@@ -199,7 +235,8 @@ export default function MomenkuPhotobooth() {
                       autoPlay
                       playsInline
                       muted
-                      className="w-full h-full object-cover rounded-lg"
+                      className={`w-full h-full object-cover rounded-lg ${isMirrored ? "scale-x-[-1]" : ""}`}
+                      style={selectedFilter && selectedFilter !== 5 ? { filter: getFilterStyle(selectedFilter) } : {}}
                     />
                     {/* Countdown Overlay */}
                     {countdown !== null && (
@@ -253,10 +290,11 @@ export default function MomenkuPhotobooth() {
                 {filters.map((filter) => (
                   <button
                     key={filter.id}
-                    onClick={() => setSelectedFilter(filter.id)}
+                    onClick={() => handleFilterSelect(filter.id)}
                     className={`w-14 h-14 rounded-full ${filter.color} ${filter.border} border-2 transition-all duration-200 hover:scale-110 shadow-lg ${
-                      selectedFilter === filter.id ? "ring-4 ring-white scale-110" : ""
+                      selectedFilter === filter.id || (filter.id === 5 && isMirrored) ? "ring-4 ring-white scale-110" : ""
                     }`}
+                    title={filter.name}
                   />
                 ))}
               </div>
@@ -330,8 +368,8 @@ export default function MomenkuPhotobooth() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="p-14 max-w-xl w-full mx-4 shadow-2xl" style={{ backgroundColor: "#FDF2F8" }}>
             <p className="text-center text-slate-700 text-lg mb-12 leading-relaxed">
-              Ingin ambil ulang foto? <br />
-              foto sebelumnya akan hilang
+              Want to retake photos? <br />
+              Previous photos will be lost
             </p>
             <div className="flex gap-3 justify-end">
               <button
