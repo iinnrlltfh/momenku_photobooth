@@ -57,7 +57,7 @@ export default function Home() {
               <button
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
-                className={`px-12 py-4 rounded-full text-xl font-semibold border-2 transition-all duration-300 ${
+                className={`px-12 py-4 rounded-full text-xl font-semibold border-2 transition-all duration-300 cursor-pointer ${
                   isHovering ? "bg-white/20 border-slate-400 text-slate-700" : "bg-white border-slate-300 text-slate-600"
                 }`}
               >

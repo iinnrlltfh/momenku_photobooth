@@ -17,6 +17,7 @@ export default function MomenkuPhotobooth() {
   const [isMirrored, setIsMirrored] = useState(false)
   const videoRef = React.useRef<HTMLVideoElement>(null)
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
+  const fileInputRef = React.useRef<HTMLInputElement>(null)
   const { selectedFrameId } = useFrame()
   const router = useRouter()
 
@@ -163,6 +164,42 @@ export default function MomenkuPhotobooth() {
     startCaptureSequence()
   }
 
+  // Handle image upload
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files
+    if (!files) return
+
+    const fileArray = Array.from(files)
+    const remainingSlots = maxPhotos - capturedPhotos.length
+
+    // Process each file
+    fileArray.slice(0, remainingSlots).forEach((file) => {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result
+        if (typeof result === "string") {
+          setCapturedPhotos((prev) => [...prev, result])
+        }
+      }
+      reader.readAsDataURL(file)
+    })
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
+  }
+
+  // Trigger file input click
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  // Remove photo at specific index
+  const removePhoto = (index: number) => {
+    setCapturedPhotos((prev) => prev.filter((_, i) => i !== index))
+  }
+
   // Don't render if no frame is selected
   if (selectedFrameId === null) {
     return null
@@ -256,14 +293,31 @@ export default function MomenkuPhotobooth() {
                 {Array.from({ length: maxPhotos }).map((_, index) => (
                   <div
                     key={index}
-                    className="w-32 h-32 bg-white rounded-lg shadow-md border-2 border-slate-300 flex items-center justify-center overflow-hidden relative"
+                    className="w-32 h-32 bg-white rounded-lg shadow-md border-2 border-slate-300 flex items-center justify-center overflow-hidden relative group"
                   >
                     {capturedPhotos[index] ? (
-                      <img
-                        src={capturedPhotos[index]}
-                        alt={`Captured photo ${index + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <img
+                          src={capturedPhotos[index]}
+                          alt={`Captured photo ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {/* Remove button - centered with backdrop */}
+                        <button
+                          onClick={() => removePhoto(index)}
+                          className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                        >
+                          <svg
+                            className="w-10 h-10 text-white"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                            strokeWidth={2.5}
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </>
                     ) : (
                       <svg
                         className="w-12 h-12 text-gray-300"
@@ -291,7 +345,7 @@ export default function MomenkuPhotobooth() {
                   <button
                     key={filter.id}
                     onClick={() => handleFilterSelect(filter.id)}
-                    className={`w-14 h-14 rounded-full ${filter.color} ${filter.border} border-2 transition-all duration-200 hover:scale-110 shadow-lg ${
+                    className={`w-14 h-14 rounded-full ${filter.color} ${filter.border} border-2 transition-all duration-200 hover:scale-110 shadow-lg cursor-pointer ${
                       selectedFilter === filter.id || (filter.id === 5 && isMirrored) ? "ring-4 ring-white scale-110" : ""
                     }`}
                     title={filter.name}
@@ -301,19 +355,31 @@ export default function MomenkuPhotobooth() {
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-3 pt-2">
-                <button className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+                <button
+                  onClick={handleUploadClick}
+                  disabled={capturedPhotos.length >= maxPhotos}
+                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                >
                   Upload Image
                 </button>
                 <button
                   onClick={() => router.push("/frames")}
-                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm"
+                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm cursor-pointer"
                 >
                   Change Frame
                 </button>
                 <button
                   onClick={startCaptureSequence}
                   disabled={isCapturing || !stream}
-                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isCapturing ? "Capturing..." : "Start"}
                 </button>
@@ -343,7 +409,7 @@ export default function MomenkuPhotobooth() {
                 <button
                   onClick={handleRetakeClick}
                   disabled={isCapturing || !stream}
-                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {isCapturing ? "Capturing..." : "Retake"}
                 </button>
@@ -353,7 +419,7 @@ export default function MomenkuPhotobooth() {
                     console.log("Photos done:", capturedPhotos)
                   }}
                   disabled={capturedPhotos.length === 0}
-                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   Done
                 </button>
@@ -374,13 +440,13 @@ export default function MomenkuPhotobooth() {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setShowRetakeModal(false)}
-                className="px-10 py-2 bg-purple-400 hover:bg-purple-600 text-white rounded-full text-sm font-medium transition-all shadow-md"
+                className="px-10 py-2 bg-purple-400 hover:bg-purple-600 text-white rounded-full text-sm font-medium transition-all shadow-md cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmRetake}
-                className="px-10 py-2 bg-purple-400 hover:bg-purple-600 text-white rounded-full text-sm font-medium transition-all shadow-md"
+                className="px-10 py-2 bg-purple-400 hover:bg-purple-600 text-white rounded-full text-sm font-medium transition-all shadow-md cursor-pointer"
               >
                 Continue
               </button>

@@ -327,7 +327,7 @@ export default function FramesPage() {
               <button
                 key={frame.id}
                 onClick={() => handleFrameSelect(frame.id)}
-                className={`group relative transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl focus:outline-none rounded-lg overflow-hidden mt-6 ${
+                className={`group relative transition-all duration-300 transform hover:-translate-y-2 hover:shadow-2xl focus:outline-none rounded-lg overflow-hidden mt-6 cursor-pointer ${
                   selectedFrameId === frame.id
                     ? "ring-4 ring-slate-700 shadow-2xl -translate-y-2"
                     : "shadow-lg hover:shadow-2xl"
