@@ -18,16 +18,28 @@ export default function Home() {
 
           {/* Navigation Links */}
           <div className="flex gap-8">
-            <Link href="/" className="text-slate-600 hover:text-slate-900 transition-colors text-lg">
+            <Link 
+              href="/" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
               Home
             </Link>
-            <Link href="/frames" className="text-slate-600 hover:text-slate-900 transition-colors text-lg">
+            <Link 
+              href="/frames" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
               Frames
             </Link>
-            <Link href="/photobooth" className="text-slate-600 hover:text-slate-900 transition-colors text-lg">
+            <Link 
+              href="/photobooth" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
               Photobooth
             </Link>
-            <Link href="/photo-preview" className="text-slate-600 hover:text-slate-900 transition-colors text-lg">
+            <Link 
+              href="/photo-preview" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
               Photo Preview
             </Link>
           </div>
@@ -57,10 +69,34 @@ export default function Home() {
               <button
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
-                className={`px-12 py-4 rounded-full text-xl font-semibold border-2 transition-all duration-300 cursor-pointer ${
-                  isHovering ? "bg-white/20 border-slate-400 text-slate-700" : "bg-white border-slate-300 text-slate-600"
-                }`}
+                className="px-28 py-4 rounded-full text-xl font-semibold transition-all duration-300 cursor-pointer relative"
+                style={
+                  isHovering
+                    ? {
+                        background: "linear-gradient(to bottom, #A083F7 0%, #27009D 100%)",
+                        border: "linear-gradient(to top, #A083F7 0%, #27009D 100%)",
+                        backgroundClip: "padding-box",
+                        color: "white",
+                      }
+                    : {
+                        background: "white",
+                        border: "2px solid #e5e7eb",
+                        color: "#4b5563",
+                      }
+                }
               >
+                {isHovering && (
+                  <span
+                    className="absolute inset-0 rounded-full pointer-events-none"
+                    style={{
+                      padding: "2px",
+                      background: "linear-gradient(to right, rgba(160, 131, 247, 0.45) 0%, rgba(39, 0, 157, 0.81) 100%)",
+                      WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                      WebkitMaskComposite: "xor",
+                      maskComposite: "exclude",
+                    }}
+                  />
+                )}
                 Start
               </button>
             </Link>
