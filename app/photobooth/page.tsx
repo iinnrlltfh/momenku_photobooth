@@ -223,16 +223,28 @@ export default function MomenkuPhotobooth() {
           </div>
 
           <div className="flex gap-8">
-            <Link href="/" className="text-slate-600 hover:text-slate-900 transition-colors text-lg">
+            <Link 
+              href="/" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
               Home
             </Link>
-            <Link href="/frames" className="text-slate-600 hover:text-slate-900 transition-colors text-lg">
+            <Link 
+              href="/frames" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
               Frames
             </Link>
-            <Link href="/photobooth" className="text-slate-600 hover:text-slate-900 transition-colors text-lg">
+            <Link 
+              href="/photobooth" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
               Photobooth
             </Link>
-            <Link href="/photo-preview" className="text-slate-600 hover:text-slate-900 transition-colors text-lg">
+            <Link 
+              href="/photo-preview" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
               Photo Preview
             </Link>
           </div>
