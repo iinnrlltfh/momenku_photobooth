@@ -22,7 +22,7 @@ export default function MomenkuPhotobooth() {
   const router = useRouter()
 
   // Define which frames can take 3 photos (rest can take 4)
-  const threePhotoFrames = [2, 5, 6, 9, 7]
+  const threePhotoFrames = [1, 2, 6, 8]
   const maxPhotos = selectedFrameId && threePhotoFrames.includes(selectedFrameId) ? 3 : 4
 
   // Request camera access

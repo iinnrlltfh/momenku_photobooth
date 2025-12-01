@@ -165,27 +165,6 @@ const frames = [
     ),
   },
   {
-    id: 7,
-    type: "disco",
-    renderFrame: () => (
-      <div
-        className="relative w-full h-64 bg-gradient-to-b from-pink-300 to-pink-200 p-4"
-        style={{
-          backgroundImage: "radial-gradient(circle, #ec4899 1.5px, transparent 1.5px)",
-          backgroundSize: "12px 12px",
-        }}
-      >
-        <div className="w-full h-full border-8 border-yellow-100 flex flex-col overflow-hidden bg-white shadow-lg">
-          <div className="flex-1 bg-gradient-to-b from-blue-200 to-blue-100 relative">
-            <div className="absolute top-2 left-2 w-3 h-3 bg-white rounded-full opacity-60" />
-            <div className="absolute top-4 right-4 w-4 h-3 bg-white rounded-full opacity-60" />
-          </div>
-          <div className="h-8 bg-gradient-to-b from-lime-400 to-lime-500" />
-        </div>
-      </div>
-    ),
-  },
-  {
     id: 8,
     type: "postal-classic",
     renderFrame: () => (
@@ -258,16 +237,16 @@ const frames = [
 ]
 
 const frameImages = [
-  { id: 2, src: "/images/2.png", alt: "Pink aesthetic frame" },
-  { id: 1, src: "/images/1.png", alt: "Pink leopard frame" },
-  { id: 5, src: "/images/6.png", alt: "Classic postal frame" },
-  { id: 3, src: "/images/4.png", alt: "Vintage postal frame" },
-  { id: 4, src: "/images/5.png", alt: "Exclusive postal frame" },
-  { id: 6, src: "/images/8.png", alt: "Cinema theater frame" },
-  { id: 9, src: "/images/3.png", alt: "Theater marquee frame" },
-  { id: 7, src: "/images/9.png", alt: "Browser window frame" },
-  { id: 8, src: "/images/10.png", alt: "Modern browser frame" },
-  { id: 10, src: "/images/7.png", alt: "Movie theater frame" },
+  { id: 1, src: "/images/1.png", alt: "Frame 1" },
+  { id: 2, src: "/images/2.png", alt: "Frame 2" },
+  { id: 3, src: "/images/3.png", alt: "Frame 3" },
+  { id: 4, src: "/images/4.png", alt: "Frame 4" },
+  { id: 5, src: "/images/5.png", alt: "Frame 5" },
+  { id: 6, src: "/images/6.png", alt: "Frame 6" },
+  { id: 7, src: "/images/7.png", alt: "Frame 7" },
+  { id: 8, src: "/images/8.png", alt: "Frame 8" },
+  { id: 9, src: "/images/9.png", alt: "Frame 9" },
+  { id: 10, src: "/images/10.png", alt: "Frame 10" },
 ]
 
 export default function FramesPage() {
