@@ -21,8 +21,8 @@ export default function PhotoPreview() {
       return
     }
 
-    // Only composite for frame ID 2 with transparent frame
-    if (selectedFrameId === 2) {
+    // Composite for frame IDs 1-6 with transparent frames
+    if (selectedFrameId >= 1 && selectedFrameId <= 6) {
       compositeWithTransparentFrame()
     } else {
       setIsLoading(false)
@@ -48,18 +48,78 @@ export default function PhotoPreview() {
       ctx.fillRect(0, 0, canvasWidth, canvasHeight)
 
       // ========================================
-      // 🎯 EDIT BAGIAN INI UNTUK ATUR POSISI FOTO
+      // 🎯 POSISI FOTO UNTUK SETIAP FRAME
       // ========================================
       // x = jarak dari kiri
       // y = jarak dari atas
       // width = lebar kotak foto
       // height = tinggi kotak foto
-      const photoAreas = [
-        { x: 5, y: 75, width: 533, height: 315 },      // Foto 1 (paling atas)
-        { x: 5, y: 423, width: 533, height: 315 },     // Foto 2
-        { x: 5, y: 750, width: 533, height: 315 },     // Foto 3
-        { x: 5, y: 1090, width: 533, height: 315 },    // Foto 4 (paling bawah)
-      ]
+      
+      let photoAreas: Array<{ x: number; y: number; width: number; height: number }> = []
+      
+      switch (selectedFrameId) {
+        case 1:
+          // TODO: Adjust these values for Frame 1
+          photoAreas = [
+            { x: 5, y: 135, width: 533, height: 315 },
+            { x: 5, y: 520, width: 533, height: 315 },
+            { x: 5, y: 870, width: 533, height: 315 },
+          ]
+          break
+        case 2:
+          // Frame 2 - Already positioned correctly
+          photoAreas = [
+            { x: 5, y: 55, width: 533, height: 315 },
+            { x: 5, y: 390, width: 533, height: 315 },
+            { x: 5, y: 730, width: 533, height: 315 },
+            { x: 5, y: 1070, width: 533, height: 315 },
+          ]
+          break
+        case 3:
+          // TODO: Adjust these values for Frame 3
+          photoAreas = [
+            { x: 5, y: 75, width: 533, height: 315 },
+            { x: 5, y: 423, width: 533, height: 315 },
+            { x: 5, y: 750, width: 533, height: 315 },
+            { x: 5, y: 1090, width: 533, height: 315 },
+          ]
+          break
+        case 4:
+          // TODO: Adjust these values for Frame 4
+          photoAreas = [
+            { x: 5, y: 75, width: 533, height: 315 },
+            { x: 5, y: 423, width: 533, height: 315 },
+            { x: 5, y: 750, width: 533, height: 315 },
+            { x: 5, y: 1090, width: 533, height: 315 },
+          ]
+          break
+        case 5:
+          // TODO: Adjust these values for Frame 5
+          photoAreas = [
+            { x: 5, y: 75, width: 533, height: 315 },
+            { x: 5, y: 423, width: 533, height: 315 },
+            { x: 5, y: 750, width: 533, height: 315 },
+            { x: 5, y: 1090, width: 533, height: 315 },
+          ]
+          break
+        case 6:
+          // TODO: Adjust these values for Frame 6
+          photoAreas = [
+            { x: 5, y: 75, width: 533, height: 315 },
+            { x: 5, y: 423, width: 533, height: 315 },
+            { x: 5, y: 750, width: 533, height: 315 },
+            { x: 5, y: 1090, width: 533, height: 315 },
+          ]
+          break
+        default:
+          // Default positioning
+          photoAreas = [
+            { x: 5, y: 75, width: 533, height: 315 },
+            { x: 5, y: 423, width: 533, height: 315 },
+            { x: 5, y: 750, width: 533, height: 315 },
+            { x: 5, y: 1090, width: 533, height: 315 },
+          ]
+      }
       // ========================================
 
       // Draw captured photos
@@ -119,7 +179,7 @@ export default function PhotoPreview() {
           resolve()
         }
         frameImg.onerror = reject
-        frameImg.src = "/images/transparent/2_transparent.png"
+        frameImg.src = `/images/transparent/${selectedFrameId}_transparent.png`
       })
 
       // Convert canvas to image
@@ -203,7 +263,7 @@ export default function PhotoPreview() {
             </div>
           ) : (
             <div className="bg-white rounded-2xl shadow-2xl p-8">
-              {selectedFrameId === 2 && compositeImage ? (
+              {selectedFrameId >= 1 && selectedFrameId <= 6 && compositeImage ? (
                 <div className="flex flex-col items-center">
                   <div className="mb-6 max-w-2xl">
                     <img 
@@ -255,7 +315,7 @@ export default function PhotoPreview() {
                   </div>
                   
                   <p className="mt-6 text-slate-500 text-sm">
-                    Frame compositing is currently only available for Frame 2
+                    Frame compositing is currently only available for Frames 1-6
                   </p>
                 </div>
               )}
