@@ -136,27 +136,32 @@ export default function PhotoPreview() {
             // Save context state
             ctx.save()
             
-            // Calculate aspect ratio for object-fit: contain behavior (no cropping)
+            // Create clipping region for pixel-perfect bounds
+            ctx.beginPath()
+            ctx.rect(area.x, area.y, area.width, area.height)
+            ctx.clip()
+            
+            // Calculate aspect ratio for object-fit: cover behavior (fills area, crops excess)
             const imgAspect = img.width / img.height
             const areaAspect = area.width / area.height
 
             let drawWidth, drawHeight, drawX, drawY
 
             if (imgAspect > areaAspect) {
-              // Image is wider - fit to width
-              drawWidth = area.width
-              drawHeight = drawWidth / imgAspect
-              drawX = area.x
-              drawY = area.y + (area.height - drawHeight) / 2  // Center vertically
-            } else {
-              // Image is taller - fit to height
+              // Image is wider - fit to height and crop sides
               drawHeight = area.height
               drawWidth = drawHeight * imgAspect
               drawX = area.x + (area.width - drawWidth) / 2  // Center horizontally
               drawY = area.y
+            } else {
+              // Image is taller - fit to width and crop top/bottom
+              drawWidth = area.width
+              drawHeight = drawWidth / imgAspect
+              drawX = area.x
+              drawY = area.y + (area.height - drawHeight) / 2  // Center vertically
             }
 
-            // Draw image with contain behavior (entire image visible, no cropping)
+            // Draw image with cover behavior (fills entire area, no whitespace)
             ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight)
             
             // Restore context state (removes clipping)
