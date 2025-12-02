@@ -13,6 +13,8 @@ export default function PhotoPreview() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [compositeImage, setCompositeImage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isHoveringRetake, setIsHoveringRetake] = useState(false)
+  const [isHoveringDownload, setIsHoveringDownload] = useState(false)
 
   useEffect(() => {
     // Redirect if no frame or photos
@@ -244,11 +246,7 @@ export default function PhotoPreview() {
 
       {/* Main Content */}
       <div className="flex-1 bg-gradient-to-r from-pink-200 via-pink-100 to-blue-200 px-6 py-12">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-4xl font-bold text-slate-700 text-center mb-8">
-            Your Photo Preview
-          </h1>
-
+        <div className="max-w-7xl mx-auto h-full">
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
               <div className="text-center">
@@ -257,64 +255,125 @@ export default function PhotoPreview() {
               </div>
             </div>
           ) : (
-            <div className="bg-white rounded-2xl shadow-2xl p-8">
+            <>
               {selectedFrameId >= 1 && selectedFrameId <= 6 && compositeImage ? (
-                <div className="flex flex-col items-center">
-                  <div className="mb-6 max-w-2xl">
+                <div className="flex items-center justify-around h-full px-12">
+                  {/* Frame on the left - smaller */}
+                  <div className="flex-shrink-0">
                     <img 
                       src={compositeImage} 
                       alt="Composite photo with frame" 
-                      className="w-full h-auto rounded-lg shadow-lg"
+                      className="h-auto shadow-lg"
+                      style={{ maxHeight: "500px", width: "auto" }}
                     />
                   </div>
                   
-                  <div className="flex gap-4">
-                    <button
-                      onClick={downloadImage}
-                      className="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-full text-lg font-medium transition-all shadow-md"
-                    >
-                      Download Photo
-                    </button>
+                  {/* Buttons on the right */}
+                  <div className="flex gap-6">
                     <button
                       onClick={handleRetake}
-                      className="px-8 py-3 bg-white hover:bg-gray-50 text-slate-600 border-2 border-slate-300 rounded-full text-lg font-medium transition-all shadow-md"
+                      onMouseEnter={() => setIsHoveringRetake(true)}
+                      onMouseLeave={() => setIsHoveringRetake(false)}
+                      className="px-16 py-3 rounded-full text-lg font-semibold transition-all duration-300 cursor-pointer relative"
+                      style={
+                        isHoveringRetake
+                          ? {
+                              background: "linear-gradient(to bottom, #A083F7 0%, #27009D 100%)",
+                              border: "linear-gradient(to top, #A083F7 0%, #27009D 100%)",
+                              backgroundClip: "padding-box",
+                              color: "white",
+                            }
+                          : {
+                              background: "white",
+                              border: "2px solid #e5e7eb",
+                              color: "#4b5563",
+                            }
+                      }
                     >
-                      Retake Photos
+                      {isHoveringRetake && (
+                        <span
+                          className="absolute inset-0 rounded-full pointer-events-none"
+                          style={{
+                            padding: "2px",
+                            background: "linear-gradient(to right, rgba(160, 131, 247, 0.45) 0%, rgba(39, 0, 157, 0.81) 100%)",
+                            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                            WebkitMaskComposite: "xor",
+                            maskComposite: "exclude",
+                          }}
+                        />
+                      )}
+                      Retake
+                    </button>
+                    <button
+                      onClick={downloadImage}
+                      onMouseEnter={() => setIsHoveringDownload(true)}
+                      onMouseLeave={() => setIsHoveringDownload(false)}
+                      className="px-16 py-3 rounded-full text-lg font-semibold transition-all duration-300 cursor-pointer relative"
+                      style={
+                        isHoveringDownload
+                          ? {
+                              background: "linear-gradient(to bottom, #A083F7 0%, #27009D 100%)",
+                              border: "linear-gradient(to top, #A083F7 0%, #27009D 100%)",
+                              backgroundClip: "padding-box",
+                              color: "white",
+                            }
+                          : {
+                              background: "white",
+                              border: "2px solid #e5e7eb",
+                              color: "#4b5563",
+                            }
+                      }
+                    >
+                      {isHoveringDownload && (
+                        <span
+                          className="absolute inset-0 rounded-full pointer-events-none"
+                          style={{
+                            padding: "2px",
+                            background: "linear-gradient(to right, rgba(160, 131, 247, 0.45) 0%, rgba(39, 0, 157, 0.81) 100%)",
+                            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                            WebkitMaskComposite: "xor",
+                            maskComposite: "exclude",
+                          }}
+                        />
+                      )}
+                      Download
                     </button>
                   </div>
                 </div>
               ) : (
-                <div className="text-center">
-                  <h2 className="text-2xl font-semibold text-slate-700 mb-6">
-                    Your Captured Photos
-                  </h2>
-                  <div className="grid grid-cols-2 gap-4 mb-8">
-                    {capturedPhotos.map((photo, index) => (
-                      <div key={index} className="rounded-lg overflow-hidden shadow-lg">
-                        <img 
-                          src={photo} 
-                          alt={`Captured photo ${index + 1}`} 
-                          className="w-full h-auto"
-                        />
-                      </div>
-                    ))}
+                <div className="bg-white rounded-2xl shadow-2xl p-8">
+                  <div className="text-center">
+                    <h2 className="text-2xl font-semibold text-slate-700 mb-6">
+                      Your Captured Photos
+                    </h2>
+                    <div className="grid grid-cols-2 gap-4 mb-8">
+                      {capturedPhotos.map((photo, index) => (
+                        <div key={index} className="rounded-lg overflow-hidden shadow-lg">
+                          <img 
+                            src={photo} 
+                            alt={`Captured photo ${index + 1}`} 
+                            className="w-full h-auto"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    
+                    <div className="flex gap-4 justify-center">
+                      <button
+                        onClick={handleRetake}
+                        className="px-8 py-3 bg-white hover:bg-gray-50 text-slate-600 border-2 border-slate-300 rounded-full text-lg font-medium transition-all shadow-md"
+                      >
+                        Retake Photos
+                      </button>
+                    </div>
+                    
+                    <p className="mt-6 text-slate-500 text-sm">
+                      Frame compositing is currently only available for Frames 1-6
+                    </p>
                   </div>
-                  
-                  <div className="flex gap-4 justify-center">
-                    <button
-                      onClick={handleRetake}
-                      className="px-8 py-3 bg-white hover:bg-gray-50 text-slate-600 border-2 border-slate-300 rounded-full text-lg font-medium transition-all shadow-md"
-                    >
-                      Retake Photos
-                    </button>
-                  </div>
-                  
-                  <p className="mt-6 text-slate-500 text-sm">
-                    Frame compositing is currently only available for Frames 1-6
-                  </p>
                 </div>
               )}
-            </div>
+            </>
           )}
 
           {/* Hidden canvas for compositing */}
