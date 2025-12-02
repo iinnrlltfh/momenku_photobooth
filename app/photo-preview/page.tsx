@@ -1,0 +1,271 @@
+"use client"
+
+import React, { useEffect, useRef, useState } from "react"
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import { useFrame } from "@/contexts/FrameContext"
+import { usePhoto } from "@/contexts/PhotoContext"
+
+export default function PhotoPreview() {
+  const { selectedFrameId } = useFrame()
+  const { capturedPhotos } = usePhoto()
+  const router = useRouter()
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [compositeImage, setCompositeImage] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    // Redirect if no frame or photos
+    if (selectedFrameId === null || capturedPhotos.length === 0) {
+      router.push("/photobooth")
+      return
+    }
+
+    // Only composite for frame ID 2 with transparent frame
+    if (selectedFrameId === 2) {
+      compositeWithTransparentFrame()
+    } else {
+      setIsLoading(false)
+    }
+  }, [selectedFrameId, capturedPhotos, router])
+
+  const compositeWithTransparentFrame = async () => {
+    if (!canvasRef.current) return
+
+    const canvas = canvasRef.current
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    try {
+      // Set canvas size to match the actual frame dimensions (533x1600)
+      const canvasWidth = 533
+      const canvasHeight = 1600
+      canvas.width = canvasWidth
+      canvas.height = canvasHeight
+
+      // Fill with white background
+      ctx.fillStyle = "#FFFFFF"
+      ctx.fillRect(0, 0, canvasWidth, canvasHeight)
+
+      // ========================================
+      // 🎯 EDIT BAGIAN INI UNTUK ATUR POSISI FOTO
+      // ========================================
+      // x = jarak dari kiri
+      // y = jarak dari atas
+      // width = lebar kotak foto
+      // height = tinggi kotak foto
+      const photoAreas = [
+        { x: 5, y: 75, width: 533, height: 315 },      // Foto 1 (paling atas)
+        { x: 5, y: 423, width: 533, height: 315 },     // Foto 2
+        { x: 5, y: 750, width: 533, height: 315 },     // Foto 3
+        { x: 5, y: 1090, width: 533, height: 315 },    // Foto 4 (paling bawah)
+      ]
+      // ========================================
+
+      // Draw captured photos
+      for (let i = 0; i < Math.min(capturedPhotos.length, photoAreas.length); i++) {
+        const photo = capturedPhotos[i]
+        const area = photoAreas[i]
+
+        // Load and draw photo
+        await new Promise<void>((resolve, reject) => {
+          const img = new Image()
+          img.onload = () => {
+            // Save context state
+            ctx.save()
+            
+            // Create clipping region to prevent overflow
+            ctx.beginPath()
+            ctx.rect(area.x, area.y, area.width, area.height)
+            ctx.clip()
+            
+            // Calculate aspect ratio for object-fit: cover behavior
+            const imgAspect = img.width / img.height
+            const areaAspect = area.width / area.height
+
+            let drawWidth, drawHeight, drawX, drawY
+
+            if (imgAspect > areaAspect) {
+              // Image is wider - fit to height and crop sides
+              drawHeight = area.height
+              drawWidth = drawHeight * imgAspect
+              drawX = area.x - (drawWidth - area.width) / 2  // Center horizontally
+              drawY = area.y
+            } else {
+              // Image is taller - fit to width and crop top/bottom
+              drawWidth = area.width
+              drawHeight = drawWidth / imgAspect
+              drawX = area.x
+              drawY = area.y - (drawHeight - area.height) / 2  // Center vertically
+            }
+
+            // Draw image with cover behavior
+            ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight)
+            
+            // Restore context state (removes clipping)
+            ctx.restore()
+            resolve()
+          }
+          img.onerror = reject
+          img.src = photo
+        })
+      }
+
+      // Load and draw transparent frame overlay
+      const frameImg = new Image()
+      await new Promise<void>((resolve, reject) => {
+        frameImg.onload = () => {
+          ctx.drawImage(frameImg, 0, 0, canvasWidth, canvasHeight)
+          resolve()
+        }
+        frameImg.onerror = reject
+        frameImg.src = "/images/transparent/2_transparent.png"
+      })
+
+      // Convert canvas to image
+      const compositeDataUrl = canvas.toDataURL("image/png")
+      setCompositeImage(compositeDataUrl)
+      setIsLoading(false)
+    } catch (error) {
+      console.error("Error compositing image:", error)
+      setIsLoading(false)
+    }
+  }
+
+  const downloadImage = () => {
+    if (!compositeImage) return
+
+    const link = document.createElement("a")
+    link.href = compositeImage
+    link.download = `momenku-photo-${Date.now()}.png`
+    link.click()
+  }
+
+  const handleRetake = () => {
+    router.push("/photobooth")
+  }
+
+  if (selectedFrameId === null || capturedPhotos.length === 0) {
+    return null
+  }
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {/* Navigation Bar */}
+      <nav className="bg-white/95 backdrop-blur-sm shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-6 flex items-center justify-between">
+          <div className="text-4xl font-bold text-slate-700" style={{ fontFamily: "Dancing Script, cursive" }}>
+            Momenku
+          </div>
+
+          <div className="flex gap-8">
+            <Link 
+              href="/" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
+              Home
+            </Link>
+            <Link 
+              href="/frames" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
+              Frames
+            </Link>
+            <Link 
+              href="/photobooth" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
+              Photobooth
+            </Link>
+            <Link 
+              href="/photo-preview" 
+              className="px-4 py-2 rounded-full text-slate-600 hover:bg-[#E9D5FF] hover:text-white transition-all text-lg"
+            >
+              Photo Preview
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <div className="flex-1 bg-gradient-to-r from-pink-200 via-pink-100 to-blue-200 px-6 py-12">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-bold text-slate-700 text-center mb-8">
+            Your Photo Preview
+          </h1>
+
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-purple-500 mx-auto mb-4"></div>
+                <p className="text-slate-600 text-lg">Creating your masterpiece...</p>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl shadow-2xl p-8">
+              {selectedFrameId === 2 && compositeImage ? (
+                <div className="flex flex-col items-center">
+                  <div className="mb-6 max-w-2xl">
+                    <img 
+                      src={compositeImage} 
+                      alt="Composite photo with frame" 
+                      className="w-full h-auto rounded-lg shadow-lg"
+                    />
+                  </div>
+                  
+                  <div className="flex gap-4">
+                    <button
+                      onClick={downloadImage}
+                      className="px-8 py-3 bg-purple-500 hover:bg-purple-600 text-white rounded-full text-lg font-medium transition-all shadow-md"
+                    >
+                      Download Photo
+                    </button>
+                    <button
+                      onClick={handleRetake}
+                      className="px-8 py-3 bg-white hover:bg-gray-50 text-slate-600 border-2 border-slate-300 rounded-full text-lg font-medium transition-all shadow-md"
+                    >
+                      Retake Photos
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <h2 className="text-2xl font-semibold text-slate-700 mb-6">
+                    Your Captured Photos
+                  </h2>
+                  <div className="grid grid-cols-2 gap-4 mb-8">
+                    {capturedPhotos.map((photo, index) => (
+                      <div key={index} className="rounded-lg overflow-hidden shadow-lg">
+                        <img 
+                          src={photo} 
+                          alt={`Captured photo ${index + 1}`} 
+                          className="w-full h-auto"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="flex gap-4 justify-center">
+                    <button
+                      onClick={handleRetake}
+                      className="px-8 py-3 bg-white hover:bg-gray-50 text-slate-600 border-2 border-slate-300 rounded-full text-lg font-medium transition-all shadow-md"
+                    >
+                      Retake Photos
+                    </button>
+                  </div>
+                  
+                  <p className="mt-6 text-slate-500 text-sm">
+                    Frame compositing is currently only available for Frame 2
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Hidden canvas for compositing */}
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
+      </div>
+    </div>
+  )
+}

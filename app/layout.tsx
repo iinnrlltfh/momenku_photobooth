@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import { Geist, Geist_Mono, Dancing_Script } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { FrameProvider } from "@/contexts/FrameContext"
+import { PhotoProvider } from "@/contexts/PhotoContext"
 import "./globals.css"
 
 const _geist = Geist({ subsets: ["latin"] })
@@ -43,7 +44,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         <FrameProvider>
-          {children}
+          <PhotoProvider>
+            {children}
+          </PhotoProvider>
         </FrameProvider>
         <Analytics />
       </body>

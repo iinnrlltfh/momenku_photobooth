@@ -5,6 +5,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useFrame } from "@/contexts/FrameContext"
+import { usePhoto } from "@/contexts/PhotoContext"
 
 export default function MomenkuPhotobooth() {
   const [selectedFilter, setSelectedFilter] = useState<number | null>(null)
@@ -20,10 +21,11 @@ export default function MomenkuPhotobooth() {
   const canvasRef = React.useRef<HTMLCanvasElement>(null)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const { selectedFrameId } = useFrame()
+  const { setCapturedPhotos: setGlobalPhotos } = usePhoto()
   const router = useRouter()
 
   // Define which frames can take 3 photos (rest can take 4)
-  const threePhotoFrames = [1, 2, 6, 8]
+  const threePhotoFrames = [1, 6, 8]
   const maxPhotos = selectedFrameId && threePhotoFrames.includes(selectedFrameId) ? 3 : 4
 
   // Request camera access
@@ -446,8 +448,9 @@ export default function MomenkuPhotobooth() {
                 </button>
                 <button
                   onClick={() => {
-                    // Handle done action - could navigate to preview or save photos
-                    console.log("Photos done:", capturedPhotos)
+                    // Save photos to global context and navigate to preview
+                    setGlobalPhotos(capturedPhotos)
+                    router.push("/photo-preview")
                   }}
                   disabled={capturedPhotos.length === 0}
                   className="px-6 py-2.5 bg-white/70 backdrop-blur-sm rounded-full text-slate-600 hover:bg-white transition-all shadow-sm text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
