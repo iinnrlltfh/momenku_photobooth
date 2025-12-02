@@ -23,8 +23,8 @@ export default function PhotoPreview() {
       return
     }
 
-    // Composite for frame IDs 1-6 with transparent frames
-    if (selectedFrameId >= 1 && selectedFrameId <= 6) {
+    // Composite for frame IDs 1-10 with transparent frames
+    if (selectedFrameId >= 1 && selectedFrameId <= 10) {
       compositeWithTransparentFrame()
     } else {
       setIsLoading(false)
@@ -78,39 +78,71 @@ export default function PhotoPreview() {
           ]
           break
         case 3:
-          // TODO: Adjust these values for Frame 3
+          // Frame 3 - 3 photos only
           photoAreas = [
-            { x: 5, y: 75, width: 533, height: 315 },
-            { x: 5, y: 423, width: 533, height: 315 },
-            { x: 5, y: 750, width: 533, height: 315 },
-            { x: 5, y: 1090, width: 533, height: 315 },
+            { x: 5, y: 120, width: 533, height: 350 },
+            { x: 5, y: 540, width: 533, height: 350 },
+            { x: 5, y: 970, width: 533, height: 350 },
           ]
           break
         case 4:
           // TODO: Adjust these values for Frame 4
           photoAreas = [
-            { x: 5, y: 75, width: 533, height: 315 },
-            { x: 5, y: 423, width: 533, height: 315 },
-            { x: 5, y: 750, width: 533, height: 315 },
-            { x: 5, y: 1090, width: 533, height: 315 },
+            { x: 5, y: 95, width: 533, height: 350 },
+            { x: 5, y: 460, width: 533, height: 350 },
+            { x: 5, y: 810, width: 533, height: 350 },
+            { x: 5, y: 1165, width: 533, height: 350 },
           ]
           break
         case 5:
           // TODO: Adjust these values for Frame 5
           photoAreas = [
-            { x: 5, y: 75, width: 533, height: 315 },
+            { x: 5, y: 105, width: 533, height: 315 },
             { x: 5, y: 423, width: 533, height: 315 },
             { x: 5, y: 750, width: 533, height: 315 },
-            { x: 5, y: 1090, width: 533, height: 315 },
+            { x: 5, y: 1070, width: 533, height: 315 },
           ]
           break
         case 6:
           // TODO: Adjust these values for Frame 6
           photoAreas = [
-            { x: 5, y: 75, width: 533, height: 315 },
-            { x: 5, y: 423, width: 533, height: 315 },
-            { x: 5, y: 750, width: 533, height: 315 },
-            { x: 5, y: 1090, width: 533, height: 315 },
+            { x: 5, y: 150, width: 533, height: 350 },
+            { x: 5, y: 535, width: 533, height: 350 },
+            { x: 5, y: 920, width: 533, height: 350 },
+          ]
+          break
+        case 7:
+          // TODO: Adjust these values for Frame 7
+          photoAreas = [
+            { x: 5, y: 75, width: 533, height: 350 },
+            { x: 5, y: 423, width: 533, height: 350 },
+            { x: 5, y: 770, width: 533, height: 350 },
+            { x: 5, y: 1120, width: 533, height: 350 },
+          ]
+          break
+        case 8:
+          // TODO: Adjust these values for Frame 8
+          photoAreas = [
+            { x: 5, y: 170, width: 533, height: 350 },
+            { x: 5, y: 575, width: 533, height: 350 },
+            { x: 5, y: 965, width: 533, height: 350 },
+          ]
+          break
+        case 9:
+          // TODO: Adjust these values for Frame 9
+          photoAreas = [
+            { x: 5, y: 150, width: 533, height: 350 },
+            { x: 5, y: 505, width: 533, height: 350 },
+            { x: 5, y: 860, width: 533, height: 350 },
+          ]
+          break
+        case 10:
+          // TODO: Adjust these values for Frame 10
+          photoAreas = [
+            { x: 5, y: 75, width: 533, height: 350 },
+            { x: 5, y: 410, width: 533, height: 350 },
+            { x: 5, y: 730, width: 533, height: 350 },
+            { x: 5, y: 1050, width: 533, height: 350 },
           ]
           break
         default:
@@ -261,7 +293,7 @@ export default function PhotoPreview() {
             </div>
           ) : (
             <>
-              {selectedFrameId >= 1 && selectedFrameId <= 6 && compositeImage ? (
+              {selectedFrameId >= 1 && selectedFrameId <= 10 && compositeImage ? (
                 <div className="flex items-center justify-around h-full px-12">
                   {/* Frame on the left - smaller */}
                   <div className="flex-shrink-0">
